@@ -30,8 +30,9 @@ button:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
 #close{margin-top:22px;background:var(--soft);color:var(--pink);font-size:1rem;padding:10px 26px}
 #no{background:#fff;color:var(--pink);border:3px solid var(--pink);transition:left .25s cubic-bezier(.3,1.6,.5,1),top .25s cubic-bezier(.3,1.6,.5,1)}
 #no.free{position:fixed;z-index:5}
-#count{margin-top:26px;display:inline-flex;align-items:baseline;gap:10px;background:var(--soft);padding:10px 22px;border-radius:99px;font-weight:700}
-#count b{font-family:'Fraunces',serif;font-weight:900;font-size:1.9rem;color:var(--pink);font-variant-numeric:tabular-nums}
+#count{margin-top:26px;display:inline-flex;align-items:center;gap:12px;line-height:1;background:var(--soft);padding:10px 22px;border-radius:99px;font-weight:700}
+#count span{display:block;line-height:1}
+#count b{display:block;line-height:1;font-family:'Fraunces',serif;font-weight:900;font-size:1.9rem;color:var(--pink);font-variant-numeric:tabular-nums}
 #count.bump b{animation:bump .5s}
 @keyframes bump{40%{transform:scale(1.35)}}
 #taunt{min-height:1.6em;margin-top:28px;font-weight:700;color:var(--pink)}
@@ -91,7 +92,7 @@ function celebrate(){
 }
 const num=document.getElementById('num'),box=document.getElementById('count');
 let total=0,online=true,voted=false;
-function show(v,bump){total=v;num.textContent=v.toLocaleString();if(bump){box.classList.remove('bump');void box.offsetWidth;box.classList.add('bump');}}
+function show(v,bump){total=v;num.textContent=v.toLocaleString();box.querySelector('span').textContent=v===1?'person said yes':'people said yes';if(bump){box.classList.remove('bump');void box.offsetWidth;box.classList.add('bump');}}
 function store(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}}
 function ord(n){const s=['th','st','nd','rd'],v=n%100;return n+(s[(v-20)%10]||s[v]||s[0]);}
 function rankText(r){return r?`You're the ${ord(r)} person to say yes!`:'Thanks! Your yes is counted.';}
@@ -119,7 +120,7 @@ yes.addEventListener('click',async()=>{
   yes.disabled=true;
   try{
     const d=await api('POST');
-    online=true;box.querySelector('span').textContent='people said yes';
+    online=true;
     show(d.count,true);
     markVoted(d.rank);
     note.textContent=d.added?rankText(d.rank):"This device has already voted. Your yes is counted once.";
