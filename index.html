@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Should FIN 10 give Freshers to FIN 11?</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=DM+Sans:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fff;--ink:#2a0f1c;--pink:#c2185b;--pink2:#e91e83;--soft:#fde7f1;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#fff;--ink:#2a0f1c}}
+html{height:100%}
+*{box-sizing:border-box}
+body{margin:0;min-height:100%;background:#fff;color:var(--ink);font-family:'DM Sans',system-ui,sans-serif;overflow:hidden;display:flex;align-items:center;justify-content:center;text-align:center}
+.blob{position:fixed;border-radius:50%;background:var(--soft);z-index:0}
+.b1{width:48vmax;height:48vmax;left:-18vmax;top:-18vmax}
+.b2{width:36vmax;height:36vmax;right:-12vmax;bottom:-14vmax;background:var(--pink);opacity:.9}
+.b3{width:10vmax;height:10vmax;right:14%;top:12%;background:var(--pink2);opacity:.85}
+main{position:relative;z-index:1;padding:24px;max-width:760px}
+.tag{display:inline-block;background:var(--pink);color:#fff;padding:8px 18px;border-radius:99px;font-weight:700;font-size:.95rem;margin-bottom:28px}
+h1{font-family:'Fraunces',Georgia,serif;font-weight:900;font-size:clamp(2.4rem,8vw,5rem);line-height:1.02;margin:0 0 14px;letter-spacing:-.02em}
+h1 span{color:var(--pink)}
+.sub{font-size:1.1rem;margin:0 0 40px;opacity:.75}
+.row{display:flex;gap:18px;justify-content:center;align-items:center;min-height:70px}
+button{font:inherit;font-weight:700;font-size:1.25rem;border:0;border-radius:16px;padding:16px 44px;cursor:pointer}
+button:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+#yes{background:var(--pink);color:#fff;box-shadow:0 8px 0 #8e1043;transition:transform .12s,box-shadow .12s}
+#yes:hover{transform:translateY(-2px) scale(1.04)}
+#yes:active{transform:translateY(6px);box-shadow:0 2px 0 #8e1043}
+#yes:disabled{cursor:default;transform:none;box-shadow:0 4px 0 #8e1043;opacity:.92}
+#close{margin-top:22px;background:var(--soft);color:var(--pink);font-size:1rem;padding:10px 26px}
+#no{background:#fff;color:var(--pink);border:3px solid var(--pink);transition:left .25s cubic-bezier(.3,1.6,.5,1),top .25s cubic-bezier(.3,1.6,.5,1)}
+#no.free{position:fixed;z-index:5}
+#count{margin-top:26px;display:inline-flex;align-items:baseline;gap:10px;background:var(--soft);padding:10px 22px;border-radius:99px;font-weight:700}
+#count b{font-family:'Fraunces',serif;font-weight:900;font-size:1.9rem;color:var(--pink);font-variant-numeric:tabular-nums}
+#count.bump b{animation:bump .5s}
+@keyframes bump{40%{transform:scale(1.35)}}
+#taunt{min-height:1.6em;margin-top:28px;font-weight:700;color:var(--pink)}
+#win{position:fixed;inset:0;background:#fff;z-index:10;display:none;align-items:center;justify-content:center;flex-direction:column;padding:24px}
+#win.on{display:flex}
+#win h2{font-family:'Fraunces',serif;font-weight:900;font-size:clamp(2.4rem,9vw,5.5rem);color:var(--pink);margin:0 0 10px;line-height:1}
+#win p{font-size:1.2rem;margin:0}
+.c{position:fixed;top:-20px;width:12px;height:18px;z-index:11;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+@media (prefers-reduced-motion:reduce){.c{display:none}#no{transition:none}}
+</style>
+</head>
+<body>
+<div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+<main>
+  <div class="tag">A very serious poll</div>
+  <h1>Should <span>FIN 10</span> give Freshers to <span>FIN 11</span>?</h1>
+  <p class="sub">Choose wisely. Only one button is willing to be caught.</p>
+  <div class="row">
+    <button id="yes">Yes</button>
+    <button id="no">No</button>
+  </div>
+  <div id="taunt" aria-live="polite"></div>
+  <div id="count"><b id="num">–</b><span>people said yes</span></div>
+</main>
+<div id="win"><h2>Yes! Obviously.</h2><p>FIN 11, your Freshers are on the way.</p><p id="winnote" style="margin-top:14px;font-weight:700;color:#c2185b"></p><button id="close">Close</button></div>
+<script>
+const yes=document.getElementById('yes'),no=document.getElementById('no'),taunt=document.getElementById('taunt');
+const lines=["Nice try.","Too slow!","Not today.","The No button has left the chat.","Have you considered Yes?","Missed again.","Your finger is not fast enough.","Just press Yes already."];
+let n=0;
+function dodge(e){
+  if(e){e.preventDefault();}
+  no.classList.add('free');
+  const w=no.offsetWidth,h=no.offsetHeight,m=12;
+  const yr=yes.getBoundingClientRect();
+  let x,y,tries=0;
+  do{
+    x=m+Math.random()*(window.innerWidth-w-2*m);
+    y=m+Math.random()*(window.innerHeight-h-2*m);
+    tries++;
+  }while(tries<30 && x<yr.right+10 && x+w>yr.left-10 && y<yr.bottom+10 && y+h>yr.top-10);
+  no.style.left=x+'px';no.style.top=y+'px';
+  taunt.textContent=lines[n++%lines.length];
+}
+['mouseenter','pointerdown','touchstart','click','focus'].forEach(t=>no.addEventListener(t,dodge,{passive:false}));
+const win=document.getElementById('win'),note=document.getElementById('winnote');
+function celebrate(){
+  const cols=['#c2185b','#e91e83','#f8a5c8','#8e1043','#ffd1e6'];
+  for(let i=0;i<120;i++){
+    const d=document.createElement('div');d.className='c';
+    d.style.left=Math.random()*100+'vw';
+    d.style.background=cols[i%cols.length];
+    d.style.animationDuration=(2+Math.random()*2.5)+'s';
+    d.style.animationDelay=Math.random()*1.2+'s';
+    document.body.appendChild(d);
+  }
+}
+const num=document.getElementById('num'),box=document.getElementById('count');
+let total=0,online=true,voted=false;
+function show(v,bump){total=v;num.textContent=v.toLocaleString();if(bump){box.classList.remove('bump');void box.offsetWidth;box.classList.add('bump');}}
+function store(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}}
+function ord(n){const s=['th','st','nd','rd'],v=n%100;return n+(s[(v-20)%10]||s[v]||s[0]);}
+function rankText(r){return r?`You're the ${ord(r)} person to say yes!`:'Thanks! Your yes is counted.';}
+function markVoted(rank){
+  voted=true;store('yesVoted','1');
+  if(rank)store('yesRank',String(rank));
+  const r=rank||Number(store('yesRank'))||0;
+  yes.disabled=true;yes.textContent='\u2713 You voted Yes';
+  no.style.display='none';
+  taunt.textContent=rankText(r);
+}
+let id=store('yesId');
+if(!id){id=(crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random().toString(16).slice(2));store('yesId',id);}
+if(store('yesVoted')==='1')markVoted();
+async function api(method){
+  const r=await fetch('/api/count?id='+encodeURIComponent(id),{method,credentials:'same-origin'});
+  if(!r.ok)throw 0;
+  return r.json();
+}
+api('GET').then(d=>{show(d.count);if(d.voted)markVoted(d.rank);}).catch(()=>{online=false;num.textContent='\u2013';box.querySelector('span').textContent='counter not connected';});
+setInterval(()=>{if(online&&!document.hidden)api('GET').then(d=>{if(d.count!==total)show(d.count,true)}).catch(()=>{})},8000);
+document.getElementById('close').addEventListener('click',()=>win.classList.remove('on'));
+yes.addEventListener('click',async()=>{
+  if(voted)return;
+  yes.disabled=true;
+  try{
+    const d=await api('POST');
+    online=true;box.querySelector('span').textContent='people said yes';
+    show(d.count,true);
+    markVoted(d.rank);
+    note.textContent=d.added?rankText(d.rank):"This device has already voted. Your yes is counted once.";
+    if(d.added)celebrate();
+  }catch(e){
+    yes.disabled=false;
+    note.textContent="Counter isn't connected yet, so this yes wasn't saved.";
+  }
+  win.classList.add('on');
+});
+</script>
+</body>
+</html>
